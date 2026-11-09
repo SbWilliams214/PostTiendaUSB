@@ -1,21 +1,30 @@
--- 1. Crear la base de datos (puedes cambiar el nombre si prefieres)
-CREATE DATABASE IF NOT EXISTS psp_ventas 
+CREATE DATABASE IF NOT EXISTS DBUSB
 CHARACTER SET utf8mb4 
 COLLATE utf8mb4_unicode_ci;
 
-USE psp_ventas;
+USE DBUSB;
 
--- 2. Tabla Usuarios
 CREATE TABLE IF NOT EXISTS usuarios (
     id_usuario INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
     apellido VARCHAR(100) NOT NULL,
+    telefono VARCHAR(30) NULL,
     contrasena VARCHAR(255) NOT NULL,
-    fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
-    estatus VARCHAR(20) DEFAULT 'activo'
+    fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
--- 3. Tabla Proveedores
+CREATE TABLE IF NOT EXISTS empleados (
+    id_empleado INT AUTO_INCREMENT PRIMARY KEY,
+    id_usuario INT NOT NULL UNIQUE,
+    rol VARCHAR(50) NOT NULL DEFAULT 'cajero',
+    fecha_ingreso DATE DEFAULT (CURRENT_DATE),
+    estatus VARCHAR(20) NOT NULL DEFAULT 'activo',
+    CONSTRAINT fk_empleados_usuarios FOREIGN KEY (id_usuario)
+        REFERENCES usuarios(id_usuario)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+) ENGINE=InnoDB;
+
 CREATE TABLE IF NOT EXISTS proveedores (
     id_proveedor INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(150) NOT NULL,
@@ -24,13 +33,11 @@ CREATE TABLE IF NOT EXISTS proveedores (
     direccion VARCHAR(255) NULL
 ) ENGINE=InnoDB;
 
--- 4. Tabla Categorías
 CREATE TABLE IF NOT EXISTS categorias (
     id_categoria INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL
 ) ENGINE=InnoDB;
 
--- 5. Tabla Productos
 CREATE TABLE IF NOT EXISTS productos (
     id_producto INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(150) NOT NULL,
@@ -53,10 +60,24 @@ CREATE TABLE IF NOT EXISTS productos (
         ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
--- 6. Tabla Pedidos
+CREATE TABLE IF NOT EXISTS caja (
+    id_caja INT AUTO_INCREMENT PRIMARY KEY,
+    id_empleado INT NOT NULL,
+    monto_inicial DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+    monto_esperado DECIMAL(10, 2) DEFAULT 0.00,
+    monto_real DECIMAL(10, 2) DEFAULT NULL,
+    fecha_apertura DATETIME DEFAULT CURRENT_TIMESTAMP,
+    fecha_cierre DATETIME DEFAULT NULL,
+    estatus VARCHAR(20) DEFAULT 'abierta',
+    CONSTRAINT fk_caja_empleados FOREIGN KEY (id_empleado)
+        REFERENCES empleados(id_empleado)
+        ON UPDATE CASCADE
+) ENGINE=InnoDB;
+
 CREATE TABLE IF NOT EXISTS pedidos (
     id_pedido INT AUTO_INCREMENT PRIMARY KEY,
-    id_usuario INT NOT NULL,
+    tipo_pedido ENUM('tienda', 'plataforma') NOT NULL DEFAULT 'tienda',
+    id_usuario INT NULL,
     monto_qr DECIMAL(10, 2) DEFAULT 0.00,
     monto_efectivo DECIMAL(10, 2) DEFAULT 0.00,
     total DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
@@ -65,10 +86,10 @@ CREATE TABLE IF NOT EXISTS pedidos (
     estatus VARCHAR(50) DEFAULT 'completado',
     CONSTRAINT fk_pedidos_usuarios FOREIGN KEY (id_usuario) 
         REFERENCES usuarios(id_usuario) 
+        ON DELETE SET NULL 
         ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
--- 7. Tabla Carrito (Detalle del pedido)
 CREATE TABLE IF NOT EXISTS carrito (
     id_carrito INT AUTO_INCREMENT PRIMARY KEY,
     id_pedido INT NOT NULL,
@@ -82,5 +103,16 @@ CREATE TABLE IF NOT EXISTS carrito (
         ON UPDATE CASCADE,
     CONSTRAINT fk_carrito_productos FOREIGN KEY (id_producto) 
         REFERENCES productos(id_producto) 
+        ON UPDATE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS reportes (
+    id_reporte INT AUTO_INCREMENT PRIMARY KEY,
+    id_empleado INT NOT NULL,
+    tipo_reporte VARCHAR(100) NOT NULL,
+    fecha_solicitud DATETIME DEFAULT CURRENT_TIMESTAMP,
+    parametros TEXT NULL,
+    CONSTRAINT fk_reportes_empleados FOREIGN KEY (id_empleado)
+        REFERENCES empleados(id_empleado)
         ON UPDATE CASCADE
 ) ENGINE=InnoDB;
