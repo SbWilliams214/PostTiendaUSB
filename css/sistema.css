@@ -1,0 +1,420 @@
+/* ==========================================================
+   SISTEMA DE SNACK - ESTILO TIPO POS / ESCRITORIO
+   Inspirado en la interfaz de gestión (Teal & Classic Clean)
+   ========================================================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+}
+
+body {
+    background-color: #eef2f5;
+    color: #333333;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ================= HEADER / BARRA DE NAVEGACIÓN ================= */
+.top-navbar {
+    background-color: #00897b;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 1rem;
+    height: 52px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.nav-modules {
+    display: flex;
+    height: 100%;
+    align-items: stretch;
+}
+
+.nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 16px;
+    background-color: #00796b;
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-right: 1px solid #00695c;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.nav-btn:first-child {
+    border-left: 1px solid #00695c;
+}
+
+.nav-btn:hover {
+    background-color: #004d40;
+}
+
+.nav-btn.active {
+    background-color: #004d40;
+    border-bottom: 3px solid #ffeb3b;
+}
+
+.nav-btn .icon {
+    font-size: 1.15rem;
+}
+
+.user-info-bar {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    color: #e0f2f1;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.user-info-bar .badge-box {
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-weight: bold;
+    color: #ffffff;
+}
+
+/* ================= CONTENEDOR PRINCIPAL ================= */
+.main-wrapper {
+    flex: 1;
+    padding: 18px 24px;
+    display: flex;
+    flex-direction: column;
+}
+
+.window-card {
+    background-color: #ffffff;
+    border: 1px solid #d5dbdb;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    padding: 16px 20px 20px 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Encabezado superior del módulo */
+.module-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.module-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #455a64;
+}
+
+.search-box-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #546e7a;
+}
+
+.search-input {
+    border: 1px solid #b0bec5;
+    border-radius: 3px;
+    padding: 5px 8px;
+    font-size: 0.88rem;
+    width: 220px;
+    outline: none;
+}
+
+.search-input:focus {
+    border-color: #00897b;
+}
+
+/* Sub-pestañas secundarias */
+.subtabs-bar {
+    display: flex;
+    gap: 2px;
+    border-bottom: 1px solid #cfd8dc;
+    margin-bottom: 14px;
+}
+
+.subtab-btn {
+    background-color: #eceff1;
+    border: 1px solid #cfd8dc;
+    border-bottom: none;
+    border-radius: 4px 4px 0 0;
+    padding: 5px 14px;
+    font-size: 0.82rem;
+    color: #455a64;
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.subtab-btn.active {
+    background-color: #ffffff;
+    border-top: 2px solid #00897b;
+    font-weight: 700;
+    color: #00897b;
+    margin-bottom: -1px;
+}
+
+/* ================= LAYOUT EN 2 COLUMNAS (PANEL + TABLA) ================= */
+.content-grid {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 16px;
+    flex: 1;
+}
+
+/* Panel Izquierdo (Formulario de Entrada / Opciones) */
+.side-panel {
+    border: 1px solid #cfd8dc;
+    border-radius: 4px;
+    padding: 14px;
+    background-color: #fafbfc;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.panel-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #546e7a;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 4px;
+}
+
+.form-group {
+    margin-bottom: 12px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #607d8b;
+    margin-bottom: 4px;
+}
+
+.form-input, .form-select {
+    width: 100%;
+    border: 1px solid #b0bec5;
+    border-radius: 3px;
+    padding: 6px 8px;
+    font-size: 0.88rem;
+    outline: none;
+    background-color: #ffffff;
+}
+
+.form-input:focus, .form-select:focus {
+    border-color: #00897b;
+}
+
+.export-section {
+    margin-top: 10px;
+    margin-bottom: 16px;
+}
+
+.export-title {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #607d8b;
+    margin-bottom: 6px;
+}
+
+.export-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-export {
+    background-color: #1976d2;
+    color: #ffffff;
+    border: none;
+    border-radius: 3px;
+    padding: 5px 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-export.pdf {
+    background-color: #0288d1;
+}
+
+.panel-action-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: auto;
+    padding-top: 14px;
+}
+
+.btn-action-big {
+    flex: 1;
+    background-color: #00897b;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    height: 42px;
+    font-size: 1.4rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.btn-action-big.cancel {
+    background-color: #00796b;
+}
+
+.btn-action-big:hover {
+    opacity: 0.9;
+}
+
+/* ================= PANEL DERECHO (TABLA DE DATOS) ================= */
+.table-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.table-responsive-box {
+    border: 1px solid #cfd8dc;
+    border-radius: 4px;
+    overflow-x: auto;
+    background-color: #ffffff;
+    min-height: 380px;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    text-align: left;
+}
+
+.data-table th {
+    background-color: #ffffff;
+    color: #37474f;
+    font-weight: 600;
+    padding: 9px 12px;
+    border-bottom: 2px solid #cfd8dc;
+    border-right: 1px solid #e0e0e0;
+}
+
+.data-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #eeeeee;
+    border-right: 1px solid #eeeeee;
+    color: #333333;
+}
+
+.data-table tr:hover {
+    background-color: #f1f8e9;
+}
+
+/* Fila seleccionada (como en la imagen con flecha/indicador azul) */
+.data-table tr.selected-row {
+    background-color: #0078d7 !important;
+    color: #ffffff !important;
+}
+
+.data-table tr.selected-row td {
+    color: #ffffff !important;
+    font-weight: 600;
+}
+
+.indicator-col {
+    width: 24px;
+    text-align: center;
+    padding: 0 !important;
+}
+
+.indicator-arrow {
+    display: inline-block;
+    width: 0; 
+    height: 0; 
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-left: 6px solid #ffffff;
+}
+
+/* ================= PAGINACIÓN ================= */
+.pagination-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.pagination-label {
+    font-size: 0.82rem;
+    color: #607d8b;
+    font-weight: 600;
+}
+
+.pagination-nav {
+    display: flex;
+    gap: 6px;
+}
+
+.page-btn {
+    background-color: #00897b;
+    color: #ffffff;
+    border: none;
+    border-radius: 3px;
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    cursor: pointer;
+    min-width: 44px;
+    transition: background-color 0.2s;
+}
+
+.page-btn:hover {
+    background-color: #00695c;
+}
+
+/* Status badges */
+.status-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+.status-badge.activo { background-color: #e8f5e9; color: #2e7d32; }
+.status-badge.alerta { background-color: #fff3e0; color: #ef6c00; }
+.status-badge.completado { background-color: #e3f2fd; color: #1565c0; }
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+    .content-grid {
+        grid-template-columns: 1fr;
+    }
+    .top-navbar {
+        height: auto;
+        flex-wrap: wrap;
+        padding: 8px;
+    }
+    .nav-modules {
+        flex-wrap: wrap;
+        width: 100%;
+        margin-bottom: 6px;
+    }
+}
+

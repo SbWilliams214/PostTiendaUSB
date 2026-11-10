@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snack Express - Productos e Inventario</title>
+    <link rel="stylesheet" href="css/sistema.css">
+</head>
+<body>
+
+    <!-- BARRA SUPERIOR DE MÓDULOS -->
+    <header class="top-navbar">
+        <nav class="nav-modules">
+            <a href="productos.html" class="nav-btn active" title="Inventario y Productos">
+                <span class="icon">🏷️</span> Productos
+            </a>
+            <a href="ventas.html" class="nav-btn" title="Ventas y Caja">
+                <span class="icon">🛒</span> Ventas
+            </a>
+            <a href="proveedores.html" class="nav-btn" title="Proveedores">
+                <span class="icon">🚚</span> Proveedores
+            </a>
+            <a href="usuarios.html" class="nav-btn" title="Usuarios y Empleados">
+                <span class="icon">👥</span> Usuarios
+            </a>
+        </nav>
+
+        <div class="user-info-bar">
+            <span>Bienvenido: <strong>Admin (AJ)</strong></span>
+            <span class="badge-box">Caja: Nº 1</span>
+        </div>
+    </header>
+
+    <!-- ÁREA PRINCIPAL -->
+    <main class="main-wrapper">
+        <div class="window-card">
+
+            <!-- Título y Barra de Búsqueda -->
+            <div class="module-header">
+                <h1 class="module-title">Inventario de Productos</h1>
+                <div class="search-box-wrap">
+                    <label for="buscar-prod">Buscar</label>
+                    <input type="text" id="buscar-prod" class="search-input" placeholder="Nombre o código...">
+                </div>
+            </div>
+
+            <!-- Pestañas secundarias -->
+            <div class="subtabs-bar">
+                <a href="#" class="subtab-btn">Bodega</a>
+                <a href="#" class="subtab-btn active">Productos</a>
+                <a href="ventas.html" class="subtab-btn">Ventas</a>
+            </div>
+
+            <!-- Contenido dividido en 2 columnas -->
+            <div class="content-grid">
+
+                <!-- Panel Lateral Izquierdo: Formulario / Opciones -->
+                <aside class="side-panel">
+                    <div>
+                        <h2 class="panel-title">Datos del Producto</h2>
+
+                        <div class="form-group">
+                            <label for="p-codigo">Código de Barras</label>
+                            <input type="text" id="p-codigo" class="form-input" value="75010014">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="p-nombre">Nombre del Producto</label>
+                            <input type="text" id="p-nombre" class="form-input" value="Papas Fritas Clásicas">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="p-categoria">Categoría</label>
+                            <select id="p-categoria" class="form-select">
+                                <option>Snacks Salados</option>
+                                <option>Bebidas y Refrescos</option>
+                                <option>Comida Rápida</option>
+                                <option>Dulces y Postres</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="p-precio">Precio de Venta ($)</label>
+                            <input type="number" step="0.01" id="p-precio" class="form-input" value="1.50">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="p-stock">Cantidad en Stock</label>
+                            <input type="number" id="p-stock" class="form-input" value="45">
+                        </div>
+
+                        <div class="export-section">
+                            <div class="export-title">Opciones para exportar</div>
+                            <div class="export-buttons">
+                                <button type="button" class="btn-export">Excel</button>
+                                <button type="button" class="btn-export pdf">PDF</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botones de Acción Grande (+ / x) -->
+                    <div class="panel-action-buttons">
+                        <button type="button" class="btn-action-big" title="Agregar o Guardar">+</button>
+                        <button type="button" class="btn-action-big cancel" title="Cancelar o Eliminar">✖</button>
+                    </div>
+                </aside>
+
+                <!-- Panel Derecho: Tabla de Registros -->
+                <section class="table-panel">
+                    <div class="table-responsive-box">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th class="indicator-col"></th>
+                                    <th>Código</th>
+                                    <th>Producto</th>
+                                    <th>Precio</th>
+                                    <th>Stock</th>
+                                    <th>Categoría</th>
+                                    <th>Proveedor</th>
+                                    <th>Estatus</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="selected-row">
+                                    <td class="indicator-col"><span class="indicator-arrow"></span></td>
+                                    <td>75010014</td>
+                                    <td>Papas Fritas Clásicas</td>
+                                    <td>$1.50</td>
+                                    <td>45</td>
+                                    <td>Snacks Salados</td>
+                                    <td>Distribuidora Sabritas</td>
+                                    <td><span class="status-badge activo">Activo</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="indicator-col"></td>
+                                    <td>75010025</td>
+                                    <td>Refresco de Cola 500ml</td>
+                                    <td>$1.00</td>
+                                    <td>32</td>
+                                    <td>Bebidas y Refrescos</td>
+                                    <td>Embotelladora Central</td>
+                                    <td><span class="status-badge activo">Activo</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="indicator-col"></td>
+                                    <td>75010036</td>
+                                    <td>Hamburguesa Especial</td>
+                                    <td>$3.50</td>
+                                    <td>18</td>
+                                    <td>Comida Rápida</td>
+                                    <td>Carnicería El Buen Corte</td>
+                                    <td><span class="status-badge activo">Activo</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="indicator-col"></td>
+                                    <td>75010047</td>
+                                    <td>Hot Dog Clásico</td>
+                                    <td>$2.00</td>
+                                    <td>25</td>
+                                    <td>Comida Rápida</td>
+                                    <td>Embutidos La Granja</td>
+                                    <td><span class="status-badge activo">Activo</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="indicator-col"></td>
+                                    <td>75010058</td>
+                                    <td>Nachos con Queso Cheddar</td>
+                                    <td>$2.00</td>
+                                    <td>4</td>
+                                    <td>Snacks Salados</td>
+                                    <td>Distribuidora Sabritas</td>
+                                    <td><span class="status-badge alerta">Bajo Stock</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="indicator-col"></td>
+                                    <td>75010069</td>
+                                    <td>Palomitas con Mantequilla</td>
+                                    <td>$1.50</td>
+                                    <td>40</td>
+                                    <td>Snacks Salados</td>
+                                    <td>Granos y Maíces SA</td>
+                                    <td><span class="status-badge activo">Activo</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Paginación -->
+                    <div class="pagination-wrap">
+                        <span class="pagination-label">Páginas 1/1</span>
+                        <div class="pagination-nav">
+                            <button type="button" class="page-btn" title="Primera">|&lt;</button>
+                            <button type="button" class="page-btn" title="Anterior">&lt;</button>
+                            <button type="button" class="page-btn" title="Siguiente">&gt;</button>
+                            <button type="button" class="page-btn" title="Última">&gt;|</button>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+
+        </div>
+    </main>
+
+</body>
+</html>
+

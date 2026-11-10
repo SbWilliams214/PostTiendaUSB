@@ -1,17 +1,17 @@
 // ===== Datos de Productos =====
 const productos = [
-    { id: 1, nombre: "Papas Fritas",   emoji: "🍟", precio: 1.50 },
-    { id: 2, nombre: "Refresco",       emoji: "🥤", precio: 1.00 },
-    { id: 3, nombre: "Hamburguesa",    emoji: "🍔", precio: 3.50 },
-    { id: 4, nombre: "Hot Dog",        emoji: "🌭", precio: 2.00 },
-    { id: 5, nombre: "Pizza",          emoji: "🍕", precio: 2.50 },
-    { id: 6, nombre: "Nachos",         emoji: "🧀", precio: 2.00 },
-    { id: 7, nombre: "Palomitas",      emoji: "🍿", precio: 1.50 },
-    { id: 8, nombre: "Donas",          emoji: "🍩", precio: 1.00 },
-    { id: 9, nombre: "Helado",         emoji: "🍦", precio: 1.75 },
-    { id: 10, nombre: "Jugo Natural",  emoji: "🧃", precio: 1.25 },
-    { id: 11, nombre: "Sandwich",      emoji: "🥪", precio: 2.50 },
-    { id: 12, nombre: "Galletas",      emoji: "🍪", precio: 0.75 },
+    { id: 1, nombre: "Papas Fritas", emoji: "🍟", precio: 1.50 },
+    { id: 2, nombre: "Refresco", emoji: "🥤", precio: 1.00 },
+    { id: 3, nombre: "Hamburguesa", emoji: "🍔", precio: 3.50 },
+    { id: 4, nombre: "Hot Dog", emoji: "🌭", precio: 2.00 },
+    { id: 5, nombre: "Pizza", emoji: "🍕", precio: 2.50 },
+    { id: 6, nombre: "Nachos", emoji: "🧀", precio: 2.00 },
+    { id: 7, nombre: "Palomitas", emoji: "🍿", precio: 1.50 },
+    { id: 8, nombre: "Donas", emoji: "🍩", precio: 1.00 },
+    { id: 9, nombre: "Helado", emoji: "🍦", precio: 1.75 },
+    { id: 10, nombre: "Jugo Natural", emoji: "🧃", precio: 1.25 },
+    { id: 11, nombre: "Sandwich", emoji: "🥪", precio: 2.50 },
+    { id: 12, nombre: "Galletas", emoji: "🍪", precio: 0.75 },
 ];
 
 // ===== Estado del Carrito =====
@@ -164,6 +164,7 @@ function calcularCambio() {
 
     cambioMonto.textContent = `$${Math.max(0, cambio).toFixed(2)}`;
     cambioMonto.style.color = cambio >= 0 ? "#27ae60" : "#e74c3c";
+
 }
 
 // ===== Confirmar Venta =====
@@ -211,3 +212,6 @@ document.addEventListener("keydown", (e) => {
 // ===== Inicializar =====
 renderizarProductos();
 
+function DatosPedido(a) {
+
+}

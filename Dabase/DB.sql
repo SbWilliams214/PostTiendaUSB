@@ -48,6 +48,7 @@ CREATE TABLE IF NOT EXISTS productos (
     umbral_alerta INT DEFAULT 5,
     codigo_barras VARCHAR(50) NULL,
     ruta_imagen VARCHAR(255) NULL,
+    estatus VARCHAR(20) NOT NULL DEFAULT 'activo',
     id_categoria INT NULL,
     id_proveedor INT NULL,
     CONSTRAINT fk_productos_categorias FOREIGN KEY (id_categoria) 

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snack Express - Usuarios y Empleados</title>
+    <link rel="stylesheet" href="css/sistema.css">
+</head>
+<body>
+
+    <!-- BARRA SUPERIOR DE MÓDULOS -->
+    <header class="top-navbar">
+        <nav class="nav-modules">
+            <a href="productos.html" class="nav-btn" title="Inventario y Productos">
+                <span class="icon">🏷️</span> Productos
+            </a>
+            <a href="ventas.html" class="nav-btn" title="Ventas y Caja">
+                <span class="icon">🛒</span> Ventas
+            </a>
+            <a href="proveedores.html" class="nav-btn" title="Proveedores">
+                <span class="icon">🚚</span> Proveedores
+            </a>
+            <a href="usuarios.html" class="nav-btn active" title="Usuarios y Empleados">
+                <span class="icon">👥</span> Usuarios
+            </a>
+        </nav>
+
+        <div class="user-info-bar">
+            <span>Bienvenido: <strong>Admin (AJ)</strong></span>
+            <span class="badge-box">Caja: Nº 1</span>
+        </div>
+    </header>
+
+    <!-- ÁREA PRINCIPAL -->
+    <main class="main-wrapper">
+        <div class="window-card">
+
+            <!-- Título y Barra de Búsqueda -->
+            <div class="module-header">
+                <h1 class="module-title">Gestión de Usuarios y Empleados</h1>
+                <div class="search-box-wrap">
+                    <label for="buscar-usr">Buscar Usuario</label>
+                    <input type="text" id="buscar-usr" class="search-input" placeholder="Nombre o rol...">
+                </div>
+            </div>
+
+            <!-- Pestañas secundarias -->
+            <div class="subtabs-bar">
+                <a href="#" class="subtab-btn active">Personal Activo</a>
+                <a href="#" class="subtab-btn">Roles y Permisos</a>
+                <a href="#" class="subtab-btn">Historial de Turnos</a>
+            </div>
+
+            <!-- Contenido dividido en 2 columnas -->
+            <div class="content-grid">
+
+                <!-- Panel Lateral Izquierdo: Formulario Usuario -->
+                <aside class="side-panel">
+                    <div>
+                        <h2 class="panel-title">Ficha de Usuario</h2>
+
+                        <div class="form-group">
+                            <label for="u-nombre">Nombre</label>
+                            <input type="text" id="u-nombre" class="form-input" value="Alejandro">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="u-apellido">Apellido</label>
+                            <input type="text" id="u-apellido" class="form-input" value="Jiménez">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="u-rol">Rol en el Sistema</label>
+                            <select id="u-rol" class="form-select">
+                                <option>Administrador</option>
+                                <option>Cajero</option>
+                                <option>Encargado de Inventario</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="u-tel">Teléfono</label>
+                            <input type="text" id="u-tel" class="form-input" value="+58 412-1234567">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="u-status">Estatus</label>
+                            <select id="u-status" class="form-select">
+                                <option>Activo</option>
+                                <option>Inactivo / Permiso</option>
+                            </select>
+                        </div>
+
+                        <div class="export-section">
+                            <div class="export-title">Exportar Datos</div>
+                            <div class="export-buttons">
+                                <button type="button" class="btn-export">Excel</button>
+                                <button type="button" class="btn-export pdf">PDF</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botones de Acción Grande -->
+                    <div class="panel-action-buttons">
+                        <button type="button" class="btn-action-big" title="Registrar o Guardar">+</button>
+                        <button type="button" class="btn-action-big cancel" title="Cancelar o Eliminar">✖</button>
+                    </div>
+                </aside>
+
+                <!-- Panel Derecho: Tabla de Usuarios -->
+                <section class="table-panel">
+                    <div class="table-responsive-box">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th class="indicator-col"></th>
+                                    <th>ID</th>
+                                    <th>Nombre Completo</th>
+                                    <th>Rol</th>
+                                    <th>Teléfono</th>
+                                    <th>Fecha Ingreso</th>
+                                    <th>Estatus</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="selected-row">
+                                    <td class="indicator-col"><span class="indicator-arrow"></span></td>
+                                    <td>#001</td>
+                                    <td>Alejandro Jiménez</td>
+                                    <td>Administrador</td>
+                                    <td>+58 412-1234567</td>
+                                    <td>2026-01-15</td>
+                                    <td><span class="status-badge activo">Activo</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="indicator-col"></td>
+                                    <td>#002</td>
+                                    <td>María Fernanda Gómez</td>
+                                    <td>Cajero</td>
+                                    <td>+58 414-9876543</td>
+                                    <td>2026-02-01</td>
+                                    <td><span class="status-badge activo">Activo</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="indicator-col"></td>
+                                    <td>#003</td>
+                                    <td>Carlos Eduardo Pérez</td>
+                                    <td>Cajero</td>
+                                    <td>+58 424-5551234</td>
+                                    <td>2026-03-10</td>
+                                    <td><span class="status-badge activo">Activo</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="indicator-col"></td>
+                                    <td>#004</td>
+                                    <td>Roberto Silva</td>
+                                    <td>Encargado Inventario</td>
+                                    <td>+58 416-3332211</td>
+                                    <td>2026-03-22</td>
+                                    <td><span class="status-badge activo">Activo</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="indicator-col"></td>
+                                    <td>#005</td>
+                                    <td>Lucía Valentina Torres</td>
+                                    <td>Cajero</td>
+                                    <td>+58 412-7778899</td>
+                                    <td>2026-04-05</td>
+                                    <td><span class="status-badge activo">Activo</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Paginación -->
+                    <div class="pagination-wrap">
+                        <span class="pagination-label">Páginas 1/1</span>
+                        <div class="pagination-nav">
+                            <button type="button" class="page-btn" title="Primera">|&lt;</button>
+                            <button type="button" class="page-btn" title="Anterior">&lt;</button>
+                            <button type="button" class="page-btn" title="Siguiente">&gt;</button>
+                            <button type="button" class="page-btn" title="Última">&gt;|</button>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+
+        </div>
+    </main>
+
+</body>
+</html>
+

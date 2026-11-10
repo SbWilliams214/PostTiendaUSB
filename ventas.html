@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snack Express - Ventas y Caja</title>
+    <link rel="stylesheet" href="css/sistema.css">
+</head>
+<body>
+
+    <!-- BARRA SUPERIOR DE MÓDULOS -->
+    <header class="top-navbar">
+        <nav class="nav-modules">
+            <a href="productos.html" class="nav-btn" title="Inventario y Productos">
+                <span class="icon">🏷️</span> Productos
+            </a>
+            <a href="ventas.html" class="nav-btn active" title="Ventas y Caja">
+                <span class="icon">🛒</span> Ventas
+            </a>
+            <a href="proveedores.html" class="nav-btn" title="Proveedores">
+                <span class="icon">🚚</span> Proveedores
+            </a>
+            <a href="usuarios.html" class="nav-btn" title="Usuarios y Empleados">
+                <span class="icon">👥</span> Usuarios
+            </a>
+        </nav>
+
+        <div class="user-info-bar">
+            <span>Bienvenido: <strong>Admin (AJ)</strong></span>
+            <span class="badge-box">Caja: Nº 1</span>
+        </div>
+    </header>
+
+    <!-- ÁREA PRINCIPAL -->
+    <main class="main-wrapper">
+        <div class="window-card">
+
+            <!-- Título y Barra de Búsqueda -->
+            <div class="module-header">
+                <h1 class="module-title">Registro de Ventas</h1>
+                <div class="search-box-wrap">
+                    <label for="buscar-venta">Buscar Venta</label>
+                    <input type="text" id="buscar-venta" class="search-input" placeholder="N° Ticket o Cliente...">
+                </div>
+            </div>
+
+            <!-- Pestañas secundarias -->
+            <div class="subtabs-bar">
+                <a href="#" class="subtab-btn active">Todas las Ventas</a>
+                <a href="#" class="subtab-btn">Corte de Caja</a>
+                <a href="#" class="subtab-btn">Pedidos Plataforma</a>
+            </div>
+
+            <!-- Contenido dividido en 2 columnas -->
+            <div class="content-grid">
+
+                <!-- Panel Lateral Izquierdo: Filtros y Nueva Venta -->
+                <aside class="side-panel">
+                    <div>
+                        <h2 class="panel-title">Filtros de Venta</h2>
+
+                        <div class="form-group">
+                            <label for="v-tipo">Tipo de Venta</label>
+                            <select id="v-tipo" class="form-select">
+                                <option>Todos</option>
+                                <option>Mostrador / Tienda</option>
+                                <option>Plataforma Online</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="v-fecha">Fecha</label>
+                            <input type="date" id="v-fecha" class="form-input" value="2026-11-09">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="v-pago">Método de Pago</label>
+                            <select id="v-pago" class="form-select">
+                                <option>Todos los métodos</option>
+                                <option>Efectivo</option>
+                                <option>Pago Móvil / QR</option>
+                                <option>Mixto</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="v-total-caja">Total Acumulado del Día</label>
+                            <input type="text" id="v-total-caja" class="form-input" value="$145.50" readonly style="font-weight: bold; color: #00796b;">
+                        </div>
+
+                        <div class="export-section">
+                            <div class="export-title">Exportar Reportes</div>
+                            <div class="export-buttons">
+                                <button type="button" class="btn-export">Excel</button>
+                                <button type="button" class="btn-export pdf">PDF</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botones de Acción Grande -->
+                    <div class="panel-action-buttons">
+                        <button type="button" class="btn-action-big" title="Nueva Venta">+</button>
+                        <button type="button" class="btn-action-big cancel" title="Cancelar o Anular">✖</button>
+                    </div>
+                </aside>
+
+                <!-- Panel Derecho: Tabla de Ventas -->
+                <section class="table-panel">
+                    <div class="table-responsive-box">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th class="indicator-col"></th>
+                                    <th>N° Pedido</th>
+                                    <th>Fecha / Hora</th>
+                                    <th>Tipo</th>
+                                    <th>Efectivo</th>
+                                    <th>Pago QR</th>
+                                    <th>Total</th>
+                                    <th>Estatus</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="selected-row">
+                                    <td class="indicator-col"><span class="indicator-arrow"></span></td>
+                                    <td>#00104</td>
+                                    <td>2026-11-09 20:15</td>
+                                    <td>Tienda</td>
+                                    <td>$5.00</td>
+                                    <td>$0.00</td>
+                                    <td>$5.00</td>
+                                    <td><span class="status-badge completado">Completado</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="indicator-col"></td>
+                                    <td>#00103</td>
+                                    <td>2026-11-09 19:42</td>
+                                    <td>Plataforma</td>
+                                    <td>$0.00</td>
+                                    <td>$12.50</td>
+                                    <td>$12.50</td>
+                                    <td><span class="status-badge completado">Completado</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="indicator-col"></td>
+                                    <td>#00102</td>
+                                    <td>2026-11-09 18:30</td>
+                                    <td>Tienda</td>
+                                    <td>$2.50</td>
+                                    <td>$0.00</td>
+                                    <td>$2.50</td>
+                                    <td><span class="status-badge completado">Completado</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="indicator-col"></td>
+                                    <td>#00101</td>
+                                    <td>2026-11-09 17:10</td>
+                                    <td>Tienda</td>
+                                    <td>$8.00</td>
+                                    <td>$0.00</td>
+                                    <td>$8.00</td>
+                                    <td><span class="status-badge completado">Completado</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="indicator-col"></td>
+                                    <td>#00100</td>
+                                    <td>2026-11-09 16:05</td>
+                                    <td>Plataforma</td>
+                                    <td>$0.00</td>
+                                    <td>$6.50</td>
+                                    <td>$6.50</td>
+                                    <td><span class="status-badge completado">Completado</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Paginación -->
+                    <div class="pagination-wrap">
+                        <span class="pagination-label">Páginas 1/1</span>
+                        <div class="pagination-nav">
+                            <button type="button" class="page-btn" title="Primera">|&lt;</button>
+                            <button type="button" class="page-btn" title="Anterior">&lt;</button>
+                            <button type="button" class="page-btn" title="Siguiente">&gt;</button>
+                            <button type="button" class="page-btn" title="Última">&gt;|</button>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+
+        </div>
+    </main>
+
+</body>
+</html>
+
