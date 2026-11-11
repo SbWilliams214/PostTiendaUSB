@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Registro</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .register-box {
+            background: white;
+            padding: 30px 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            width: 380px;
+            text-align: center;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0 14px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        button {
+            width: 100%;
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        a {
+            color: #2d6cdf;
+            text-decoration: none;
+        }
+        #mensaje {
+            margin-top: 12px;
+            min-height: 22px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-box">
+        <h2>Crear cuenta</h2>
+        <form id="registerForm">
+            <input type="text" name="usuario" placeholder="Nombre de usuario" required>
+            <input type="text" name="nombre" placeholder="Nombre" required>
+            <input type="text" name="apellido" placeholder="Apellido" required>
+            <input type="tel" name="telefono" placeholder="Teléfono">
+            <input type="password" name="contrasena" placeholder="Contraseña" required>
+            <button type="submit">Registrarse</button>
+        </form>
+        <p>¿Ya tienes cuenta? <a href="Login.html">Inicia sesión</a></p>
+        <div id="mensaje"></div>
+    </div>
+
+    <script>
+        const registerForm = document.getElementById('registerForm');
+        const mensaje = document.getElementById('mensaje');
+
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            mensaje.textContent = 'Registrando usuario...';
+            mensaje.style.color = '#333';
+
+            try {
+                const formData = new FormData(registerForm);
+                const response = await fetch('api/register.php', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    mensaje.textContent = data.message || 'Error al registrar usuario.';
+                    mensaje.style.color = '#c0392b';
+                    return;
+                }
+
+                mensaje.textContent = data.message;
+                mensaje.style.color = '#27ae60';
+                window.location.href = data.redirect || 'productos.html';
+            } catch (error) {
+                mensaje.textContent = 'No se pudo conectar con el servidor PHP.';
+                mensaje.style.color = '#c0392b';
+            }
+        });
+    </script>
+</body>
+</html>
