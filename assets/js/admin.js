@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
 
-    /* ── SIDEBAR TOGGLE ── */
+    /* -- SIDEBAR TOGGLE -- */
     var hamburger = document.getElementById('hamburger');
     var sidebar = document.getElementById('adminSidebar');
     var overlay = document.getElementById('sidebarOverlay');
@@ -9,29 +9,25 @@ document.addEventListener('DOMContentLoaded', function () {
         overlay.addEventListener('click', function () { sidebar.classList.remove('open'); overlay.classList.remove('show'); });
     }
 
-    /* ── CLOSE ALERTS ── */
-    document.querySelectorAll('.close-alert').forEach(function (btn) {
-        btn.addEventListener('click', function () { this.closest('.alert').style.display = 'none'; });
-    });
-
-    /* ── MODAL HELPERS ── */
+    /* -- MODAL HELPERS -- */
     window.openModal = function (id) { var el = document.getElementById(id); if (el) el.classList.add('show'); };
     window.closeModal = function (id) { var el = document.getElementById(id); if (el) el.classList.remove('show'); };
     document.querySelectorAll('.modal-overlay').forEach(function (ov) {
         ov.addEventListener('click', function (e) { if (e.target === ov) ov.classList.remove('show'); });
     });
 
-    /* ── POS: SEARCH / FILTER ── */
+    /* -- POS: SEARCH / FILTER -- */
     var posSearch = document.getElementById('posSearchInput');
     if (posSearch) {
         posSearch.focus();
-        var allCards = document.querySelectorAll('.pos-product-card');
+        var allCards = document.querySelectorAll('#posResults .pos-product-card');
 
         posSearch.addEventListener('input', function () {
             var q = this.value.trim().toLowerCase();
             allCards.forEach(function (card) {
-                var name = card.querySelector('.ppc-name').textContent.toLowerCase();
-                card.style.display = (!q || name.indexOf(q) !== -1) ? '' : 'none';
+                var name = (card.getAttribute('data-name') || '').toLowerCase();
+                var barcode = (card.getAttribute('data-barcode') || '').toLowerCase();
+                card.style.display = (!q || name.indexOf(q) !== -1 || barcode.indexOf(q) !== -1) ? '' : 'none';
             });
         });
 
@@ -39,15 +35,16 @@ document.addEventListener('DOMContentLoaded', function () {
             if (e.key === 'Enter') {
                 e.preventDefault();
                 var q = this.value.trim().toLowerCase();
-                // If barcode match (exact), auto-add
+                // Try to find exact barcode match
+                var found = false;
                 allCards.forEach(function (card) {
-                    var onclick = card.getAttribute('onclick');
-                    if (onclick && onclick.toLowerCase().indexOf(q) !== -1) {
+                    var barcode = (card.getAttribute('data-barcode') || '').toLowerCase();
+                    if (barcode && barcode === q) {
                         card.click();
+                        found = true;
                     }
                 });
-                // Also try API search for barcode
-                if (q.length > 3) {
+                if (!found && q.length > 3) {
                     fetch('api/buscar_producto.php?q=' + encodeURIComponent(q))
                         .then(function (r) { return r.json(); })
                         .then(function (data) {
@@ -57,36 +54,57 @@ document.addEventListener('DOMContentLoaded', function () {
                             }
                         }).catch(function(){});
                 }
+                this.value = '';
+                // Reset filter
+                allCards.forEach(function(card){ card.style.display = ''; });
             }
         });
     }
 
-    /* ── POS: CART ── */
+    /* -- POS: CART -- */
     window.posCart = [];
 
     window.addToCart = function (id, name, price, maxStock) {
-        var existing = posCart.find(function (i) { return i.id === id; });
+        var existing = posCart.find(function (i) { return i.id === id && !i.isPromo; });
         if (existing) {
             if (existing.qty < maxStock) existing.qty++;
         } else {
-            posCart.push({ id: id, name: name, price: parseFloat(price), qty: 1, maxStock: maxStock });
+            posCart.push({ id: id, name: name, price: parseFloat(price), qty: 1, maxStock: maxStock, isPromo: false });
         }
         renderCart();
     };
 
-    window.updateCartQty = function (id, delta) {
-        var item = posCart.find(function (i) { return i.id === id; });
+    window.addPromoToCart = function (id, name, price) {
+        var existing = posCart.find(function (i) { return i.id === id && i.isPromo; });
+        if (existing) {
+            existing.qty++;
+        } else {
+            posCart.push({ id: id, name: '[PROMO] ' + name, price: parseFloat(price), qty: 1, maxStock: 999, isPromo: true });
+        }
+        renderCart();
+    };
+
+    window.updateCartQty = function (idx, delta) {
+        var item = posCart[idx];
         if (!item) return;
         item.qty += delta;
-        if (item.qty <= 0) { posCart = posCart.filter(function (i) { return i.id !== id; }); }
+        if (item.qty <= 0) { posCart.splice(idx, 1); }
         else if (item.qty > item.maxStock) { item.qty = item.maxStock; }
         renderCart();
     };
 
-    window.removeFromCart = function (id) {
-        posCart = posCart.filter(function (i) { return i.id !== id; });
+    window.removeFromCart = function (idx) {
+        posCart.splice(idx, 1);
         renderCart();
     };
+
+    window.clearPosCart = function() {
+        posCart = [];
+        renderCart();
+        if (posSearch) { posSearch.value = ''; posSearch.focus(); }
+    };
+
+    window.renderCart = renderCart;
 
     function renderCart() {
         var container = document.getElementById('posCartItems');
@@ -102,18 +120,18 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         var total = 0;
-        container.innerHTML = posCart.map(function (item) {
+        container.innerHTML = posCart.map(function (item, idx) {
             var sub = item.price * item.qty;
             total += sub;
-            return '<div class="pos-cart-item">'
+            return '<div class="pos-cart-item' + (item.isPromo ? ' pos-cart-promo' : '') + '">'
                 + '<span class="ci-name">' + escapeHtml(item.name) + '</span>'
                 + '<span class="ci-qty">'
-                + '  <button onclick="updateCartQty(' + item.id + ',-1)">&minus;</button>'
+                + '  <button onclick="updateCartQty(' + idx + ',-1)">&minus;</button>'
                 + '  <span>' + item.qty + '</span>'
-                + '  <button onclick="updateCartQty(' + item.id + ',1)">+</button>'
+                + '  <button onclick="updateCartQty(' + idx + ',1)">+</button>'
                 + '</span>'
                 + '<span class="ci-subtotal">Bs ' + sub.toFixed(2) + '</span>'
-                + '<button class="ci-remove" onclick="removeFromCart(' + item.id + ')" title="Eliminar">&times;</button>'
+                + '<button class="ci-remove" onclick="removeFromCart(' + idx + ')" title="Eliminar">&times;</button>'
                 + '</div>';
         }).join('');
 
@@ -121,7 +139,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (cobrarBtn) cobrarBtn.disabled = false;
     }
 
-    /* ── POS: COBRAR ── */
+    /* -- POS: COBRAR -- */
     var cobrarBtn = document.getElementById('btnCobrar');
     if (cobrarBtn) {
         cobrarBtn.addEventListener('click', function () {
@@ -129,7 +147,8 @@ document.addEventListener('DOMContentLoaded', function () {
             var metodo = document.getElementById('posPaymentMethod').value;
             var csrf = document.querySelector('input[name="csrf_token"]');
             var payload = {
-                items: posCart.map(function (i) { return { id: i.id, qty: i.qty, price: i.price }; }),
+                items: posCart.filter(function(i){ return !i.isPromo; }).map(function (i) { return { id: i.id, qty: i.qty, price: i.price }; }),
+                promos: posCart.filter(function(i){ return i.isPromo; }).map(function(i) { return { id: i.id, qty: i.qty, price: i.price }; }),
                 metodo_pago: metodo,
                 csrf_token: csrf ? csrf.value : ''
             };
@@ -141,7 +160,7 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(function (r) { return r.json(); })
             .then(function (data) {
                 if (data.success) {
-                    alert('Venta registrada. Folio: ' + (data.folio || ''));
+                    showPosToast('Venta registrada. Folio: ' + (data.folio || ''));
                     posCart = [];
                     renderCart();
                     if (posSearch) { posSearch.value = ''; posSearch.focus(); }
@@ -153,12 +172,17 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    /* ── CONFIRM ACTIONS ── */
-    document.querySelectorAll('[data-confirm]').forEach(function (el) {
-        el.addEventListener('click', function (e) { if (!confirm(this.dataset.confirm)) e.preventDefault(); });
-    });
+    /* -- POS Toast -- */
+    function showPosToast(msg) {
+        var t = document.createElement('div');
+        t.className = 'alert alert-success flash-auto';
+        t.style.cssText = 'position:fixed;top:20px;right:20px;z-index:9999;padding:14px 24px;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.15);';
+        t.textContent = msg;
+        document.body.appendChild(t);
+        setTimeout(function(){ t.style.transition='opacity 0.3s'; t.style.opacity='0'; setTimeout(function(){ t.remove(); },300); },1500);
+    }
 
-    /* ── FILE INPUT PREVIEW ── */
+    /* -- FILE INPUT PREVIEW -- */
     document.querySelectorAll('input[type="file"][data-preview]').forEach(function (input) {
         input.addEventListener('change', function () {
             var preview = document.getElementById(this.dataset.preview);
@@ -170,7 +194,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    /* ── UTILITY ── */
+    /* -- UTILITY -- */
     function escapeHtml(str) { var div = document.createElement('div'); div.textContent = str; return div.innerHTML; }
     window.escapeHtml = escapeHtml;
 });

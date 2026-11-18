@@ -21,10 +21,11 @@ function loadCartPage() {
             const items = data.data.items;
             let html = '<div class="cart-table"><table class="data-table"><thead><tr><th>Producto</th><th>Precio</th><th>Cantidad</th><th>Subtotal</th><th></th></tr></thead><tbody>';
             items.forEach(item => {
+                var itemType = item.type || 'producto';
                 html += '<tr><td>' + item.nombre + '</td><td>Bs ' + parseFloat(item.precio_venta).toFixed(2) + '</td>'
-                    + '<td><div class="cart-qty-controls"><button onclick="updateCartItem(' + item.id + ',' + (item.cantidad-1) + ')">-</button><span>' + item.cantidad + '</span><button onclick="updateCartItem(' + item.id + ',' + (item.cantidad+1) + ')">+</button></div></td>'
+                    + '<td><div class="cart-qty-controls"><button onclick="updateCartItem(' + item.id + ',' + (item.cantidad-1) + ',\'' + itemType + '\')">-</button><span>' + item.cantidad + '</span><button onclick="updateCartItem(' + item.id + ',' + (item.cantidad+1) + ',\'' + itemType + '\')">+</button></div></td>'
                     + '<td><strong>Bs ' + parseFloat(item.subtotal).toFixed(2) + '</strong></td>'
-                    + '<td><button class="btn-remove" onclick="removeCartItem(' + item.id + ')">X</button></td></tr>';
+                    + '<td><button class="btn-remove" onclick="removeCartItem(' + item.id + ',\'' + itemType + '\')">X</button></td></tr>';
             });
             html += '</tbody></table></div>';
             html += '<div class="cart-summary"><div class="cart-total">Total: Bs ' + parseFloat(data.data.total).toFixed(2) + '</div>';
@@ -34,13 +35,15 @@ function loadCartPage() {
         });
 }
 
-function updateCartItem(id, qty) {
-    if (qty <= 0) { removeCartItem(id); return; }
-    const fd = new FormData(); fd.append('action','update'); fd.append('id',id); fd.append('qty',qty);
+function updateCartItem(id, qty, type) {
+    type = type || 'producto';
+    if (qty <= 0) { removeCartItem(id, type); return; }
+    const fd = new FormData(); fd.append('action','update'); fd.append('id',id); fd.append('qty',qty); fd.append('type',type);
     fetch('api/carrito.php', {method:'POST', body:fd}).then(()=>{ loadCartPage(); updateBadge(); });
 }
-function removeCartItem(id) {
-    const fd = new FormData(); fd.append('action','remove'); fd.append('id',id);
+function removeCartItem(id, type) {
+    type = type || 'producto';
+    const fd = new FormData(); fd.append('action','remove'); fd.append('id',id); fd.append('type',type);
     fetch('api/carrito.php', {method:'POST', body:fd}).then(()=>{ loadCartPage(); updateBadge(); });
 }
 function updateBadge() {

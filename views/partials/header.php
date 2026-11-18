@@ -13,7 +13,7 @@ $cssFile = $isAdmin ? 'assets/css/admin.css' : 'assets/css/catalogo.css'; ?>
 <nav class="admin-topnav">
     <div style="display:flex;align-items:center;gap:12px;">
         <button class="hamburger" id="hamburger">&#9776;</button>
-        <a href="index.php?page=admin" class="brand">Sistema POS</a>
+        <a href="index.php?page=admin&module=caja" class="brand">Sistema POS</a>
     </div>
     <div class="nav-right">
         <span class="user-info"><?= htmlspecialchars($_SESSION['user_name'] ?? 'Admin') ?> (<?= htmlspecialchars($_SESSION['user_role'] ?? '') ?>)</span>
@@ -43,14 +43,19 @@ $cssFile = $isAdmin ? 'assets/css/admin.css' : 'assets/css/catalogo.css'; ?>
 <?php endif; ?>
 
 <?php if (!empty($_SESSION['flash_success'])): ?>
-    <div class="alert alert-success" style="margin:20px;<?= $isAdmin ? 'margin-left:270px;' : '' ?>">
+    <div class="alert alert-success flash-auto" style="margin:20px;<?= $isAdmin ? 'margin-left:270px;' : '' ?>">
         <?= htmlspecialchars($_SESSION['flash_success']) ?>
-        <button class="close-alert" onclick="this.parentElement.style.display='none'">&times;</button>
     </div>
 <?php unset($_SESSION['flash_success']); endif; ?>
 <?php if (!empty($_SESSION['flash_error'])): ?>
-    <div class="alert alert-danger" style="margin:20px;<?= $isAdmin ? 'margin-left:270px;' : '' ?>">
+    <div class="alert alert-danger flash-auto" style="margin:20px;<?= $isAdmin ? 'margin-left:270px;' : '' ?>">
         <?= htmlspecialchars($_SESSION['flash_error']) ?>
-        <button class="close-alert" onclick="this.parentElement.style.display='none'">&times;</button>
     </div>
 <?php unset($_SESSION['flash_error']); endif; ?>
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+    document.querySelectorAll('.flash-auto').forEach(function(el){
+        setTimeout(function(){ el.style.transition='opacity 0.3s'; el.style.opacity='0'; setTimeout(function(){ el.remove(); },300); },1000);
+    });
+});
+</script>

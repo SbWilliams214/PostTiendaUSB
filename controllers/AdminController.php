@@ -212,9 +212,74 @@ class AdminController {
     // ── CAJA ─────────────────────────────────────────────────────
     public function caja() {
         global $viewData;
+        $empId = $_SESSION['user_id'] ?? 0;
+
+        // Handle POST actions
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $act = $_POST['form_action'] ?? '';
+            if ($act === 'abrir_caja') {
+                $monto = (float)($_POST['monto_inicial'] ?? 0);
+                $this->pdo->prepare("INSERT INTO caja (id_empleado,monto_inicial,fecha_apertura,hora_apertura,status) VALUES (?,?,CURDATE(),CURTIME(),'abierta')")
+                    ->execute([$empId, $monto]);
+                $_SESSION['flash_success'] = 'Caja abierta';
+                header('Location: index.php?page=admin&module=caja'); exit;
+            }
+            if ($act === 'cerrar_caja') {
+                $cajaId = (int)$_POST['caja_id'];
+                // Calculate totals by payment method
+                $stmt = $this->pdo->prepare("
+                    SELECT mp.metodo, IFNULL(SUM(dp.monto_pagado),0) AS total
+                    FROM detalle_pago dp
+                    JOIN metodo_pago mp ON mp.id=dp.id_metodo_pago
+                    JOIN pedidos p ON p.id=dp.id_pedido
+                    JOIN caja ca ON ca.id=?
+                    WHERE p.status='entregado' AND p.fecha=ca.fecha_apertura AND p.hora>=ca.hora_apertura
+                      AND p.id_cliente_empleado=?
+                    GROUP BY mp.metodo
+                ");
+                $stmt->execute([$cajaId, $empId]);
+                $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                // Ensure both Efectivo and QR always appear
+                $desglose = ['Efectivo' => 0, 'QR' => 0];
+                foreach ($rows as $r) {
+                    $desglose[$r['metodo']] = (float)$r['total'];
+                }
+                $desgloseArr = [];
+                foreach ($desglose as $metodo => $total) {
+                    $desgloseArr[] = ['metodo' => $metodo, 'total' => $total];
+                }
+                $totalFinal = array_sum($desglose);
+
+                $stmtM = $this->pdo->prepare("SELECT monto_inicial FROM caja WHERE id=?");
+                $stmtM->execute([$cajaId]);
+                $montoInicial = (float)$stmtM->fetchColumn();
+
+                $this->pdo->prepare("UPDATE caja SET monto_final=?,fecha_cierre=CURDATE(),hora_cierre=CURTIME(),status='cerrada' WHERE id=?")
+                    ->execute([round($totalFinal + $montoInicial, 2), $cajaId]);
+
+                $_SESSION['caja_cierre'] = [
+                    'monto_inicial' => $montoInicial,
+                    'desglose' => $desgloseArr,
+                    'total_ventas' => $totalFinal,
+                    'monto_final' => round($totalFinal + $montoInicial, 2),
+                ];
+                $_SESSION['flash_success'] = 'Caja cerrada exitosamente';
+                header('Location: index.php?page=admin&module=caja'); exit;
+            }
+        }
+
+        // Check if there's an open caja for this employee
+        $stmt = $this->pdo->prepare("SELECT * FROM caja WHERE id_empleado=? AND status='abierta' ORDER BY id DESC LIMIT 1");
+        $stmt->execute([$empId]);
+        $cajaAbierta = $stmt->fetch(PDO::FETCH_ASSOC);
+
         $viewData = [
             'productos' => $this->pdo->query("SELECT i.id, i.nombre, i.precio_venta, i.cantidad, i.codigo_barras, i.ruta_image, i.precio_proveedor, cm.nombre AS compania FROM inventario i LEFT JOIN compania_marca cm ON cm.id=i.id_compania WHERE i.status='activo' ORDER BY i.nombre")->fetchAll(PDO::FETCH_ASSOC),
+            'promociones' => $this->pdo->query("SELECT p.*, GROUP_CONCAT(CONCAT(i.nombre,' x',dp.precio_unitario_promo) SEPARATOR ', ') AS productos_promo FROM promociones p LEFT JOIN detalle_promociones dp ON dp.id_promocion=p.id LEFT JOIN inventario i ON i.id=dp.id_producto WHERE p.status='activo' GROUP BY p.id ORDER BY p.nombre")->fetchAll(PDO::FETCH_ASSOC),
+            'caja_abierta' => $cajaAbierta,
+            'caja_cierre' => $_SESSION['caja_cierre'] ?? null,
         ];
+        unset($_SESSION['caja_cierre']);
     }
 
     // ── PEDIDOS ──────────────────────────────────────────────────
@@ -224,7 +289,7 @@ class AdminController {
         $where = $filter === 'todos' ? '' : "WHERE p.status='".addslashes($filter)."'";
         $stmt = $this->pdo->query("SELECT p.*, c.nombre AS cliente_nombre, tp.nombre AS tipo FROM pedidos p LEFT JOIN clientes c ON c.id=p.id_cliente_empleado LEFT JOIN tipo_pedido tp ON tp.id=p.id_tipo_pedido $where ORDER BY p.fecha DESC, p.hora DESC LIMIT 100");
         $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $stmtD = $this->pdo->prepare("SELECT cr.*, i.nombre AS producto_nombre FROM carrito cr LEFT JOIN inventario i ON i.id=cr.id_producto WHERE cr.id_pedido=?");
+        $stmtD = $this->pdo->prepare("SELECT cr.*, i.nombre AS producto_nombre, i.ruta_image AS producto_imagen FROM carrito cr LEFT JOIN inventario i ON i.id=cr.id_producto WHERE cr.id_pedido=?");
         foreach ($orders as &$o) { $stmtD->execute([$o['id']]); $o['items'] = $stmtD->fetchAll(PDO::FETCH_ASSOC); }
         $viewData = ['pedidos'=>$orders,'filtro'=>$filter];
 
@@ -244,11 +309,46 @@ class AdminController {
                 $img = $this->uploadImage('imagen');
                 $this->pdo->prepare("INSERT INTO promociones (id_empleado,nombre,descripcion,precio,ruta_imagen,status,status_plataforma) VALUES (?,?,?,?,?,?,?)")
                     ->execute([$_SESSION['user_id'],$_POST['nombre'],$_POST['descripcion'],$_POST['precio'],$img,$_POST['status']??'activo',$_POST['status_plataforma']??'inactivo']);
+                $promoId = $this->pdo->lastInsertId();
+                // Save detail products
+                if (!empty($_POST['prod_ids'])) {
+                    $stmtDP = $this->pdo->prepare("INSERT INTO detalle_promociones (id_promocion,id_producto,precio_unitario_promo) VALUES (?,?,?)");
+                    foreach ($_POST['prod_ids'] as $k => $pid) {
+                        $precioP = $_POST['prod_precios'][$k] ?? 0;
+                        $stmtDP->execute([$promoId, (int)$pid, (float)$precioP]);
+                    }
+                }
                 $_SESSION['flash_success'] = 'Promocion creada';
+                header('Location: index.php?page=admin&module=promociones'); exit;
+            }
+            if ($act === 'editar') {
+                $id = (int)$_POST['id'];
+                $img = $this->uploadImage('imagen');
+                if ($img) {
+                    $this->pdo->prepare("UPDATE promociones SET nombre=?,descripcion=?,precio=?,ruta_imagen=?,status=?,status_plataforma=? WHERE id=?")
+                        ->execute([$_POST['nombre'],$_POST['descripcion'],$_POST['precio'],$img,$_POST['status']??'activo',$_POST['status_plataforma']??'inactivo',$id]);
+                } else {
+                    $this->pdo->prepare("UPDATE promociones SET nombre=?,descripcion=?,precio=?,status=?,status_plataforma=? WHERE id=?")
+                        ->execute([$_POST['nombre'],$_POST['descripcion'],$_POST['precio'],$_POST['status']??'activo',$_POST['status_plataforma']??'inactivo',$id]);
+                }
+                // Update detail products
+                $this->pdo->prepare("DELETE FROM detalle_promociones WHERE id_promocion=?")->execute([$id]);
+                if (!empty($_POST['prod_ids'])) {
+                    $stmtDP = $this->pdo->prepare("INSERT INTO detalle_promociones (id_promocion,id_producto,precio_unitario_promo) VALUES (?,?,?)");
+                    foreach ($_POST['prod_ids'] as $k => $pid) {
+                        $precioP = $_POST['prod_precios'][$k] ?? 0;
+                        $stmtDP->execute([$id, (int)$pid, (float)$precioP]);
+                    }
+                }
+                $_SESSION['flash_success'] = 'Promocion actualizada';
                 header('Location: index.php?page=admin&module=promociones'); exit;
             }
             if ($act === 'toggle_plat') {
                 $this->pdo->prepare("UPDATE promociones SET status_plataforma=IF(status_plataforma='activo','inactivo','activo') WHERE id=?")->execute([(int)$_POST['id']]);
+                header('Location: index.php?page=admin&module=promociones'); exit;
+            }
+            if ($act === 'toggle_status') {
+                $this->pdo->prepare("UPDATE promociones SET status=IF(status='activo','inactivo','activo') WHERE id=?")->execute([(int)$_POST['id']]);
                 header('Location: index.php?page=admin&module=promociones'); exit;
             }
             if ($act === 'eliminar') {
@@ -257,10 +357,27 @@ class AdminController {
                 header('Location: index.php?page=admin&module=promociones'); exit;
             }
         }
+        $promos = $this->pdo->query("SELECT * FROM promociones ORDER BY id DESC")->fetchAll(PDO::FETCH_ASSOC);
+        // Load detail products for each promo
+        $stmtDet = $this->pdo->prepare("SELECT dp.*, i.nombre AS producto_nombre FROM detalle_promociones dp LEFT JOIN inventario i ON i.id=dp.id_producto WHERE dp.id_promocion=?");
+        foreach ($promos as &$pr) {
+            $stmtDet->execute([$pr['id']]);
+            $pr['detalle_productos'] = $stmtDet->fetchAll(PDO::FETCH_ASSOC);
+        }
         $viewData = [
-            'promociones' => $this->pdo->query("SELECT * FROM promociones ORDER BY id DESC")->fetchAll(PDO::FETCH_ASSOC),
+            'promociones' => $promos,
             'productos' => $this->pdo->query("SELECT id,nombre,precio_venta FROM inventario WHERE status='activo' ORDER BY nombre")->fetchAll(PDO::FETCH_ASSOC),
         ];
+        if (!empty($_GET['editar'])) {
+            $stmt = $this->pdo->prepare("SELECT * FROM promociones WHERE id=?");
+            $stmt->execute([(int)$_GET['editar']]);
+            $editando = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($editando) {
+                $stmtDet->execute([$editando['id']]);
+                $editando['detalle_productos'] = $stmtDet->fetchAll(PDO::FETCH_ASSOC);
+            }
+            $viewData['editando'] = $editando;
+        }
     }
 
     // ── CONFIGURACIONES ──────────────────────────────────────────
@@ -285,13 +402,27 @@ class AdminController {
     public function reportes() {
         global $viewData;
         $viewData = ['reportData' => null, 'tipo' => ''];
+
+        // Load employees list for filter
+        $viewData['empleados'] = $this->pdo->query("SELECT e.id, u.nombre FROM empleados e JOIN usuario u ON u.id=e.id_usuario ORDER BY u.nombre")->fetchAll(PDO::FETCH_ASSOC);
+
         if (!empty($_GET['generar'])) {
             $tipo = $_GET['generar'];
             $desde = $_GET['desde'] ?? date('Y-m-d', strtotime('-30 days'));
             $hasta = $_GET['hasta'] ?? date('Y-m-d');
+            $empFiltro = (int)($_GET['empleado'] ?? 0);
             $viewData['tipo'] = $tipo;
             $viewData['desde'] = $desde;
             $viewData['hasta'] = $hasta;
+            $viewData['empleado_filtro'] = $empFiltro;
+
+            // Build employee filter clause
+            $empWhere = '';
+            $empParams = [];
+            if ($empFiltro > 0) {
+                $empWhere = ' AND p.id_cliente_empleado = ?';
+                $empParams = [$empFiltro];
+            }
 
             if ($tipo === 'ventas_diarias') {
                 $stmt = $this->pdo->prepare("
@@ -299,16 +430,19 @@ class AdminController {
                            tp.nombre AS tipo_pedido,
                            cr.cantidad, cr.precio_unitario, cr.subtotal,
                            i.nombre AS producto_nombre,
-                           cm.nombre AS marca
+                           cm.nombre AS marca,
+                           u.nombre AS empleado_nombre
                     FROM pedidos p
                     JOIN carrito cr ON cr.id_pedido = p.id
                     LEFT JOIN inventario i ON i.id = cr.id_producto
                     LEFT JOIN compania_marca cm ON cm.id = i.id_compania
                     LEFT JOIN tipo_pedido tp ON tp.id = p.id_tipo_pedido
-                    WHERE p.status='entregado' AND p.fecha BETWEEN ? AND ?
+                    LEFT JOIN empleados emp ON emp.id = p.id_cliente_empleado
+                    LEFT JOIN usuario u ON u.id = emp.id_usuario
+                    WHERE p.status='entregado' AND p.fecha BETWEEN ? AND ? $empWhere
                     ORDER BY p.fecha DESC, p.hora DESC, p.id DESC
                 ");
-                $stmt->execute([$desde,$hasta]);
+                $stmt->execute(array_merge([$desde,$hasta], $empParams));
                 $viewData['reportData'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
             } elseif ($tipo === 'inventario') {
                 $viewData['reportData'] = $this->pdo->query("SELECT i.*, c.nombre AS categoria, cm.nombre AS compania FROM inventario i LEFT JOIN categoria c ON c.id=i.id_categoria LEFT JOIN compania_marca cm ON cm.id=i.id_compania ORDER BY i.cantidad ASC")->fetchAll(PDO::FETCH_ASSOC);
@@ -318,19 +452,22 @@ class AdminController {
                            tp.nombre AS tipo_pedido,
                            cr.cantidad, cr.precio_unitario, cr.subtotal,
                            i.nombre AS producto_nombre, i.precio_proveedor,
-                           (cr.precio_unitario - IFNULL(i.precio_proveedor,0)) * cr.cantidad AS ganancia_item
+                           (cr.precio_unitario - IFNULL(i.precio_proveedor,0)) * cr.cantidad AS ganancia_item,
+                           u.nombre AS empleado_nombre
                     FROM pedidos p
                     JOIN carrito cr ON cr.id_pedido = p.id
                     LEFT JOIN inventario i ON i.id = cr.id_producto
                     LEFT JOIN tipo_pedido tp ON tp.id = p.id_tipo_pedido
-                    WHERE p.status='entregado' AND p.fecha BETWEEN ? AND ?
+                    LEFT JOIN empleados emp ON emp.id = p.id_cliente_empleado
+                    LEFT JOIN usuario u ON u.id = emp.id_usuario
+                    WHERE p.status='entregado' AND p.fecha BETWEEN ? AND ? $empWhere
                     ORDER BY p.fecha DESC, p.hora DESC, p.id DESC
                 ");
-                $stmt->execute([$desde,$hasta]);
+                $stmt->execute(array_merge([$desde,$hasta], $empParams));
                 $viewData['reportData'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 // Total ganancia
-                $stmtT = $this->pdo->prepare("SELECT SUM(total_ganancia) AS total FROM pedidos WHERE status='entregado' AND fecha BETWEEN ? AND ?");
-                $stmtT->execute([$desde,$hasta]);
+                $stmtT = $this->pdo->prepare("SELECT SUM(total_ganancia) AS total FROM pedidos WHERE status='entregado' AND fecha BETWEEN ? AND ? $empWhere");
+                $stmtT->execute(array_merge([$desde,$hasta], $empParams));
                 $viewData['totalGanancia'] = $stmtT->fetch(PDO::FETCH_ASSOC)['total'] ?? 0;
             }
         }

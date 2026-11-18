@@ -27,6 +27,21 @@ class CatalogoController {
         ];
     }
 
+    public function promo_detalle() {
+        global $viewData;
+        $id = (int)($_GET['id'] ?? 0);
+        $stmt = $this->pdo->prepare("SELECT * FROM promociones WHERE id=? AND status='activo'");
+        $stmt->execute([$id]);
+        $pr = $stmt->fetch(PDO::FETCH_ASSOC);
+        $productos = [];
+        if ($pr) {
+            $stmtD = $this->pdo->prepare("SELECT dp.cantidad, i.nombre FROM detalle_promociones dp JOIN inventario i ON i.id=dp.id_producto WHERE dp.id_promocion=?");
+            $stmtD->execute([$pr['id']]);
+            $productos = $stmtD->fetchAll(PDO::FETCH_ASSOC);
+        }
+        $viewData = ['promocion' => $pr ? array_merge($pr, ['productos' => $productos]) : null];
+    }
+
     public function producto() {
         global $viewData;
         $id = (int)($_GET['id'] ?? 0);

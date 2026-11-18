@@ -7,7 +7,10 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') { http_response_code(405); echo json_
 if (empty($_SESSION['user_type']) || $_SESSION['user_type'] !== 'empleado') { http_response_code(403); echo json_encode(['error'=>'No autorizado']); exit; }
 
 $input = json_decode(file_get_contents('php://input'), true);
-if (empty($input['items'])) { echo json_encode(['success'=>false,'error'=>'Sin productos']); exit; }
+$items = $input['items'] ?? [];
+$promos = $input['promos'] ?? [];
+
+if (empty($items) && empty($promos)) { echo json_encode(['success'=>false,'error'=>'Sin productos']); exit; }
 
 try {
     $pdo->beginTransaction();
@@ -23,7 +26,8 @@ try {
     $stmtS = $pdo->prepare("UPDATE inventario SET cantidad=cantidad-? WHERE id=?");
     $stmtP = $pdo->prepare("SELECT precio_proveedor FROM inventario WHERE id=?");
 
-    foreach ($input['items'] as $item) {
+    // Process regular products
+    foreach ($items as $item) {
         $sub = $item['price'] * $item['qty'];
         $totalVenta += $sub;
         $stmtP->execute([$item['id']]);
@@ -31,6 +35,39 @@ try {
         $totalGanancia += ($item['price'] - ($pp['precio_proveedor'] ?? 0)) * $item['qty'];
         $stmtL->execute([$pedidoId, $item['id'], $item['qty'], $item['price'], round($sub,2)]);
         $stmtS->execute([$item['qty'], $item['id']]);
+    }
+
+    // Process promotions as recipes
+    $stmtReceta = $pdo->prepare("SELECT dp.id_producto, dp.precio_unitario_promo FROM detalle_promociones dp WHERE dp.id_promocion=?");
+    foreach ($promos as $promo) {
+        $promoId = (int)$promo['id'];
+        $promoQty = (int)$promo['qty'];
+        $promoPrice = (float)$promo['price'];
+        $totalVenta += $promoPrice * $promoQty;
+
+        // Get the recipe (products that compose this promo)
+        $stmtReceta->execute([$promoId]);
+        $receta = $stmtReceta->fetchAll(PDO::FETCH_ASSOC);
+
+        if (!empty($receta)) {
+            // For each product in the recipe, deduct stock and register in carrito
+            foreach ($receta as $ingrediente) {
+                $prodId = (int)$ingrediente['id_producto'];
+                $precioPromo = (float)$ingrediente['precio_unitario_promo'];
+
+                // Get cost price for ganancia calculation
+                $stmtP->execute([$prodId]);
+                $pp = $stmtP->fetch(PDO::FETCH_ASSOC);
+                $totalGanancia += ($precioPromo - ($pp['precio_proveedor'] ?? 0)) * $promoQty;
+
+                // Register each product in carrito with promo price
+                $subItem = $precioPromo * $promoQty;
+                $stmtL->execute([$pedidoId, $prodId, $promoQty, $precioPromo, round($subItem,2)]);
+
+                // Deduct stock from real inventory
+                $stmtS->execute([$promoQty, $prodId]);
+            }
+        }
     }
 
     $pdo->prepare("UPDATE pedidos SET total_ganancia=? WHERE id=?")->execute([round($totalGanancia,2), $pedidoId]);

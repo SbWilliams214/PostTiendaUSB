@@ -9,7 +9,10 @@
     <?php if(empty($d['pedidos'])):?>
         <p class="text-muted text-center" style="padding:40px;">No hay pedidos <?=$filtro!=='todos'?$filtro.'s':''?></p>
     <?php else:?>
-    <div class="order-cards">
+    <div style="padding:12px 0;">
+        <input type="text" id="filtroPedido" class="form-control" placeholder="Buscar por codigo de pedido..." style="max-width:350px;">
+    </div>
+    <div class="order-cards" id="orderCards">
         <?php foreach($d['pedidos'] as $p):?>
         <div class="order-card">
             <div class="oc-header">
@@ -21,11 +24,21 @@
                 <strong>Tipo:</strong> <?=htmlspecialchars($p['tipo']??'')?><br>
                 <strong>Fecha:</strong> <?=$p['fecha']?> <?=$p['hora']?><br>
                 <strong>Productos:</strong>
-                <ul style="margin:4px 0 0 16px;">
+                <div style="margin-top:8px;">
                     <?php foreach(($p['items']??[]) as $item):?>
-                    <li><?=htmlspecialchars($item['producto_nombre']??'Producto')?> x <?=$item['cantidad']?> - Bs <?=number_format($item['subtotal'],2)?></li>
+                    <div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #eee;">
+                        <?php if(!empty($item['producto_imagen'])):?>
+                            <img src="<?=htmlspecialchars($item['producto_imagen'])?>" style="width:45px;height:45px;object-fit:cover;border-radius:4px;">
+                        <?php else:?>
+                            <div style="width:45px;height:45px;background:#eef1f8;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:0.7rem;">Sin img</div>
+                        <?php endif;?>
+                        <div style="flex:1;">
+                            <strong><?=htmlspecialchars($item['producto_nombre']??'Producto')?></strong><br>
+                            <small>x <?=$item['cantidad']?> - Bs <?=number_format($item['subtotal'],2)?></small>
+                        </div>
+                    </div>
                     <?php endforeach;?>
-                </ul>
+                </div>
             </div>
             <div class="oc-total">Total: Bs <?=number_format(array_sum(array_column($p['items']??[],'subtotal')),2)?></div>
             <?php if($p['status']==='pendiente'):?>
@@ -41,3 +54,19 @@
     </div>
     <?php endif;?>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    var input = document.getElementById('filtroPedido');
+    if (!input) return;
+    var cards = document.querySelectorAll('#orderCards .order-card');
+    input.addEventListener('input', function(){
+        var q = this.value.trim().toLowerCase();
+        cards.forEach(function(card){
+            var codigo = card.querySelector('.oc-header strong');
+            var text = codigo ? codigo.textContent.toLowerCase() : '';
+            card.style.display = (!q || text.indexOf(q) !== -1) ? '' : 'none';
+        });
+    });
+});
+</script>

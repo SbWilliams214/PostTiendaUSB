@@ -99,7 +99,7 @@ switch ($page) {
     case 'catalogo':
         load_controller('CatalogoController');
 
-        $allowed_views = ['home', 'producto', 'carrito', 'checkout', 'login', 'registro', 'mis_pedidos'];
+        $allowed_views = ['home', 'producto', 'promo_detalle', 'carrito', 'checkout', 'login', 'registro', 'mis_pedidos'];
         if (!in_array($vista, $allowed_views, true)) {
             $vista = 'home';
         }
@@ -140,8 +140,15 @@ switch ($page) {
             'proveedores', 'categorias',
         ];
 
+        // Role-based access: Cajero only sees caja and pedidos
+        $rol = $_SESSION['user_role'] ?? '';
+        $cajero_modules = ['caja', 'pedidos'];
+        if ($rol !== 'Admin' && $module !== null && !in_array($module, $cajero_modules, true)) {
+            $module = 'caja';
+        }
+
         if ($module === null || !in_array($module, $allowed_modules, true)) {
-            $module = 'inventario'; // default admin landing
+            $module = ($rol === 'Admin') ? 'inventario' : 'caja';
         }
 
         if (class_exists('AdminController')) {

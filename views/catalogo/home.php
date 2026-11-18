@@ -4,12 +4,35 @@
     <section class="catalog-hero">
         <h1>Bienvenido a nuestra Tienda</h1>
         <p>Explora nuestro catalogo y haz tu pedido en linea</p>
-        <form class="hero-search" method="GET">
-            <input type="hidden" name="page" value="catalogo"><input type="hidden" name="vista" value="home">
-            <input type="text" name="buscar" placeholder="Buscar productos..." value="<?= htmlspecialchars($d['buscar'] ?? '') ?>">
-            <button type="submit">Buscar</button>
-        </form>
+        <div class="hero-search">
+            <input type="text" id="catalogSearchInput" placeholder="Buscar productos..." value="<?= htmlspecialchars($d['buscar'] ?? '') ?>">
+        </div>
     </section>
+
+    <!-- Promotions at TOP -->
+    <?php if (!empty($d['promociones'])): ?>
+    <section class="promo-section" style="margin-top:0;">
+        <h2>Promociones</h2>
+        <div class="product-grid">
+            <?php foreach ($d['promociones'] as $pr): ?>
+            <div class="product-card" style="border:2px solid #9E1B22;position:relative;cursor:pointer;" onclick="alert('Esta promocion solo esta disponible en caja. Visitanos en tienda para adquirirla.')">
+                <span class="promo-badge">PROMO</span>
+                <?php if (!empty($pr['ruta_imagen'])): ?>
+                    <img src="<?= htmlspecialchars($pr['ruta_imagen']) ?>" alt="<?= htmlspecialchars($pr['nombre']) ?>" class="product-card-img">
+                <?php else: ?>
+                    <div class="product-card-img placeholder-img">Sin imagen</div>
+                <?php endif; ?>
+                <div class="product-card-body">
+                    <h3 class="product-name"><?= htmlspecialchars($pr['nombre']) ?></h3>
+                    <p style="font-size:.88rem;color:#555;margin-bottom:6px;"><?= htmlspecialchars($pr['descripcion'] ?? '') ?></p>
+                    <p class="product-price" style="color:#9E1B22;">Bs <?= number_format($pr['precio'], 2) ?></p>
+                    <span style="display:inline-block;margin-top:6px;font-size:.82rem;color:#1A3B8B;font-weight:600;">Disponible solo en caja</span>
+                </div>
+            </div>
+            <?php endforeach; ?>
+        </div>
+    </section>
+    <?php endif; ?>
 
     <!-- Category pills -->
     <div class="category-pills">
@@ -20,9 +43,9 @@
     </div>
 
     <!-- Products grid -->
-    <section class="product-grid">
+    <section class="product-grid" id="productGrid">
         <?php foreach (($d['productos'] ?? []) as $p): ?>
-        <div class="product-card">
+        <div class="product-card" data-name="<?= strtolower(htmlspecialchars($p['nombre'])) ?>" data-brand="<?= strtolower(htmlspecialchars($p['compania'] ?? '')) ?>">
             <?php if ($p['ruta_image']): ?>
                 <img src="<?= htmlspecialchars($p['ruta_image']) ?>" alt="<?= htmlspecialchars($p['nombre']) ?>" class="product-card-img">
             <?php else: ?>
@@ -34,7 +57,7 @@
                 <p class="product-price">Bs <?= number_format($p['precio_venta'], 2) ?></p>
                 <div class="product-card-actions">
                     <a href="index.php?page=catalogo&vista=producto&id=<?= $p['id'] ?>" class="btn-ver">Ver detalle</a>
-                    <button class="btn-add-cart" onclick="catalogAddToCart(<?= $p['id'] ?>)">Agregar</button>
+                    <button type="button" class="btn-add-cart" onclick="catalogAddToCart(<?= $p['id'] ?>)">Agregar</button>
                 </div>
             </div>
         </div>
@@ -43,22 +66,4 @@
             <p class="text-center text-muted" style="grid-column:1/-1;padding:60px 0;">No hay productos disponibles</p>
         <?php endif; ?>
     </section>
-
-    <!-- Promotions -->
-    <?php if (!empty($d['promociones'])): ?>
-    <section class="promo-section">
-        <h2>Promociones</h2>
-        <div class="promo-grid">
-            <?php foreach ($d['promociones'] as $pr): ?>
-            <div class="promo-card">
-                <span class="promo-badge">PROMO</span>
-                <?php if ($pr['ruta_imagen']): ?><img src="<?= htmlspecialchars($pr['ruta_imagen']) ?>" class="promo-img"><?php endif; ?>
-                <h3><?= htmlspecialchars($pr['nombre']) ?></h3>
-                <p><?= htmlspecialchars($pr['descripcion'] ?? '') ?></p>
-                <span class="promo-price">Bs <?= number_format($pr['precio'], 2) ?></span>
-            </div>
-            <?php endforeach; ?>
-        </div>
-    </section>
-    <?php endif; ?>
 </div>
