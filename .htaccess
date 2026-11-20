@@ -1,0 +1,29 @@
+# ─── ProyectUSB — XAMPP Apache Config ─────────────────────────────────
+
+# Prevent directory listing
+Options -Indexes
+
+# UTF-8
+AddDefaultCharset UTF-8
+
+# PHP upload limits
+<IfModule mod_php.c>
+    php_value upload_max_filesize 10M
+    php_value post_max_size 12M
+</IfModule>
+
+# Block access to sensitive directories
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^config/   - [F,L]
+    RewriteRule ^models/   - [F,L]
+    RewriteRule ^controllers/ - [F,L]
+    RewriteRule ^sql/      - [F,L]
+</IfModule>
+
+# Block hidden files
+<FilesMatch "^\.">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+</FilesMatch>
