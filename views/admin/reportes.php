@@ -11,6 +11,16 @@
                 <option value="ganancias" <?=($d['tipo']??'')==='ganancias'?'selected':''?>>Ganancias</option>
             </select>
         </div>
+        <div class="form-group"><label>Empleado</label>
+            <select name="empleado" class="form-control">
+                <option value="0">Todos los empleados (Global)</option>
+                <?php foreach (($d['empleados'] ?? []) as $emp): ?>
+                    <option value="<?= $emp['id'] ?>" <?= ($d['empleado_filtro'] ?? 0) == $emp['id'] ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($emp['nombre']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
         <div class="form-group"><label>Desde</label><input type="date" name="desde" class="form-control" value="<?=htmlspecialchars($d['desde']??date('Y-m-d',strtotime('-30 days')))?>"></div>
         <div class="form-group"><label>Hasta</label><input type="date" name="hasta" class="form-control" value="<?=htmlspecialchars($d['hasta']??date('Y-m-d'))?>"></div>
         <div class="form-group"><label>&nbsp;</label><button type="submit" class="btn btn-primary">Generar</button></div>
@@ -28,6 +38,7 @@
                         <th>Hora</th>
                         <th>Codigo Pedido</th>
                         <th>Tipo</th>
+                        <th>Empleado</th>
                         <th>Estado</th>
                         <th>Producto</th>
                         <th>Marca</th>
@@ -44,6 +55,7 @@
                         <td><?=htmlspecialchars($r['hora'])?></td>
                         <td><strong><?=htmlspecialchars($r['codigo_pedido'])?></strong></td>
                         <td><?=htmlspecialchars($r['tipo_pedido']??'—')?></td>
+                        <td><?=htmlspecialchars($r['empleado_nombre']??'—')?></td>
                         <td><span class="badge badge-success"><?=htmlspecialchars($r['status'])?></span></td>
                         <td><?=htmlspecialchars($r['producto_nombre']??'—')?></td>
                         <td><?=htmlspecialchars($r['marca']??'—')?></td>
@@ -53,7 +65,7 @@
                     </tr>
                     <?php endforeach; ?>
                 <?php else: ?>
-                    <tr><td colspan="10" class="text-center text-muted">Sin datos para este periodo</td></tr>
+                    <tr><td colspan="11" class="text-center text-muted">Sin datos para este periodo</td></tr>
                 <?php endif; ?>
                 </tbody>
             </table>
@@ -103,6 +115,7 @@
                         <th>Hora</th>
                         <th>Codigo Pedido</th>
                         <th>Tipo</th>
+                        <th>Empleado</th>
                         <th>Producto</th>
                         <th>Cant.</th>
                         <th>P. Compra</th>
@@ -118,6 +131,7 @@
                         <td><?=htmlspecialchars($r['hora'])?></td>
                         <td><strong><?=htmlspecialchars($r['codigo_pedido'])?></strong></td>
                         <td><?=htmlspecialchars($r['tipo_pedido']??'--')?></td>
+                        <td><?=htmlspecialchars($r['empleado_nombre']??'--')?></td>
                         <td><?=htmlspecialchars($r['producto_nombre']??'--')?></td>
                         <td><?=$r['cantidad']?></td>
                         <td>Bs <?=number_format($r['precio_proveedor']??0,2)?></td>
@@ -126,7 +140,7 @@
                     </tr>
                     <?php endforeach; ?>
                 <?php else: ?>
-                    <tr><td colspan="9" class="text-center text-muted">Sin datos para este periodo</td></tr>
+                    <tr><td colspan="10" class="text-center text-muted">Sin datos para este periodo</td></tr>
                 <?php endif; ?>
                 </tbody>
             </table>

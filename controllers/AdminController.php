@@ -420,7 +420,7 @@ class AdminController {
             $empWhere = '';
             $empParams = [];
             if ($empFiltro > 0) {
-                $empWhere = ' AND p.id_cliente_empleado = ?';
+                $empWhere = ' AND p.id_cliente_empleado = ? AND p.id_tipo_pedido = 2';
                 $empParams = [$empFiltro];
             }
 
@@ -431,13 +431,13 @@ class AdminController {
                            cr.cantidad, cr.precio_unitario, cr.subtotal,
                            i.nombre AS producto_nombre,
                            cm.nombre AS marca,
-                           u.nombre AS empleado_nombre
+                           IF(p.id_tipo_pedido=1, 'Web / En linea', IFNULL(u.nombre, 'Sin asignar')) AS empleado_nombre
                     FROM pedidos p
                     JOIN carrito cr ON cr.id_pedido = p.id
                     LEFT JOIN inventario i ON i.id = cr.id_producto
                     LEFT JOIN compania_marca cm ON cm.id = i.id_compania
                     LEFT JOIN tipo_pedido tp ON tp.id = p.id_tipo_pedido
-                    LEFT JOIN empleados emp ON emp.id = p.id_cliente_empleado
+                    LEFT JOIN empleados emp ON (emp.id = p.id_cliente_empleado AND p.id_tipo_pedido = 2)
                     LEFT JOIN usuario u ON u.id = emp.id_usuario
                     WHERE p.status='entregado' AND p.fecha BETWEEN ? AND ? $empWhere
                     ORDER BY p.fecha DESC, p.hora DESC, p.id DESC
@@ -453,12 +453,12 @@ class AdminController {
                            cr.cantidad, cr.precio_unitario, cr.subtotal,
                            i.nombre AS producto_nombre, i.precio_proveedor,
                            (cr.precio_unitario - IFNULL(i.precio_proveedor,0)) * cr.cantidad AS ganancia_item,
-                           u.nombre AS empleado_nombre
+                           IF(p.id_tipo_pedido=1, 'Web / En linea', IFNULL(u.nombre, 'Sin asignar')) AS empleado_nombre
                     FROM pedidos p
                     JOIN carrito cr ON cr.id_pedido = p.id
                     LEFT JOIN inventario i ON i.id = cr.id_producto
                     LEFT JOIN tipo_pedido tp ON tp.id = p.id_tipo_pedido
-                    LEFT JOIN empleados emp ON emp.id = p.id_cliente_empleado
+                    LEFT JOIN empleados emp ON (emp.id = p.id_cliente_empleado AND p.id_tipo_pedido = 2)
                     LEFT JOIN usuario u ON u.id = emp.id_usuario
                     WHERE p.status='entregado' AND p.fecha BETWEEN ? AND ? $empWhere
                     ORDER BY p.fecha DESC, p.hora DESC, p.id DESC
@@ -466,7 +466,7 @@ class AdminController {
                 $stmt->execute(array_merge([$desde,$hasta], $empParams));
                 $viewData['reportData'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 // Total ganancia
-                $stmtT = $this->pdo->prepare("SELECT SUM(total_ganancia) AS total FROM pedidos WHERE status='entregado' AND fecha BETWEEN ? AND ? $empWhere");
+                $stmtT = $this->pdo->prepare("SELECT SUM(p.total_ganancia) AS total FROM pedidos p WHERE p.status='entregado' AND p.fecha BETWEEN ? AND ? $empWhere");
                 $stmtT->execute(array_merge([$desde,$hasta], $empParams));
                 $viewData['totalGanancia'] = $stmtT->fetch(PDO::FETCH_ASSOC)['total'] ?? 0;
             }
